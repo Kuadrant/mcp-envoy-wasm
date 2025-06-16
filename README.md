@@ -1,6 +1,6 @@
 # mcp-envoy-wasm
 
-# 🧠 Local LibreChat + MCP + http-streamable + Envoy Setup
+# Local LibreChat + MCP + http-streamable + Envoy Setup
 
 TODO add intro
 
