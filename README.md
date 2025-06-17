@@ -23,7 +23,7 @@ For more info see [mcp-server](https://github.com/modelcontextprotocol/servers/t
 npx @modelcontextprotocol/server-everything streamableHttp
 ```
 
-### Test it out
+### Test it out
 
 ```bash
 curl http://localhost:3001/mcp
@@ -55,11 +55,11 @@ The envoy config will route traffic from `/mcp` to the mcp server started on por
 docker run --rm -it   -v "$PWD/target/wasm32-wasip1/release/mcp_wasm_filter.wasm:/etc/envoy/mcp_wasm_filter.wasm"   -v "$PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml"   -p 10000:10000 -p 9901:9901   envoyproxy/envoy-dev:latest
 ```
 
-### Test it out
+### Test it out
 
 Initialise an mcp connection to the server
 
-```
+```bash
 curl -v http://localhost:10000/mcp \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
@@ -73,7 +73,7 @@ curl -v http://localhost:10000/mcp \
 
 The response should look something like this:
 
-```
+```bash
 event: message
 id: 38134b7b-a51a-4edb-b169-cc741f23df88_1750105674999_8lup021w
 data: {"result":{"protocolVersion":"2024-11-05","capabilities":{"prompts":{},"resources":{"subscribe":true},"tools":{},"logging":{},"completions":{}},"serverInfo":{"name":"example-servers/everything","version":"1.0.0"}},"jsonrpc":"2.0","id":"1"}
@@ -81,7 +81,7 @@ data: {"result":{"protocolVersion":"2024-11-05","capabilities":{"prompts":{},"re
 
 There should also be some logs in the envoy output like this:
 
-```
+```bash
 [2025-06-16 16:36:59.563][38][info][wasm] [source/extensions/common/wasm/context.cc:1137] wasm log mcp_wasm_filter_root my_vm: vm start called
 
 ...
@@ -115,3 +115,16 @@ LibreChat should now be running at http://localhost:3080
 The mcp server should show up in the UI, and allow you to exec the tool using a prompt like `add 7 and 3`.
 You'll need to select an AI provider and model from the dropdown at the top first, and set an API Key (unless you have a custom model/endpoint set up in librechat you can use).
 For example, you can use a Gemini API Key on the free tier to test this out.
+
+## MCP Inspector
+
+For a more direct & possibly quicker way to generate mcp traffic, you can use the [mcp-inspector](https://github.com/modelcontextprotocol/inspector) tool.
+Start it with this:
+
+```bash
+DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector
+```
+
+then open http://localhost:6274/?transport=streamable-http&serverUrl=http://localhost:10000/mcp and click 'Connect'.
+This should connect the browser directly to the mcp server via envoy proxy.
+Then use tools from the Tools tab (`printEnv` is good for testing as there's no params). Just click 'Run Tool' repeatedly in the UI to generate mcp traffic.
