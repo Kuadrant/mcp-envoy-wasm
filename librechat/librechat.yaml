@@ -1,6 +1,6 @@
 version: 1.2.1
 
 mcpServers:
-  streamable-http-server:
+  local-everything:
     type: streamable-http
-    url: http://host.docker.internal:9901/mcp
+    url: http://host.docker.internal:10000/mcp

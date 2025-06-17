@@ -6,60 +6,52 @@ TODO add intro
 
 ## Prerequisites
 
-- Docker
-- npm (Node Package Manager)
+- Docker/podman
+- node.js/npm/npx - https://nodejs.org/en/download
 - rust - https://www.rust-lang.org/tools/install
-
-## LibreChat
-
-### Setup
-
-Follow the librechat installation guide to install librechat via [docker](https://www.librechat.ai/docs/local/docker)
-
-### Configuration
-
-Use the docker-compose-override.yaml and libre-config.json provided in this repo to configure LibreChat.
-
-### Run LibreChat Locally
-
-```bash
-cd librechat
-docker compose up
-
-# LibreChat should now be running at:
-# http://localhost:3080
-```
 
 ## Streamable HTTP MCP Server (Everything)
 
+**Important:** Run this before librechat as it attempts to conenct to any configured mcp servers at startup
+
 ### Setup and running locally
 
-Install & Run MCP Server with Streamable HTTP support for more info see [mcp-server](https://github.com/modelcontextprotocol/servers/tree/main/src/everything#run-from-source-with-streamable-http-transport)
+Install & run an MCP Server with Streamable HTTP support.
+For more info see [mcp-server](https://github.com/modelcontextprotocol/servers/tree/main/src/everything#run-from-source-with-streamable-http-transport)
 
 ```bash
-cd mcp-server
-npm install
-npm run start:streamableHttp
+npx @modelcontextprotocol/server-everything streamableHttp
 ```
 
-The server should run on:  
-`http://localhost:3001/mcp`
+### Test it out
+
+```bash
+curl http://localhost:3001/mcp
+```
+
+The response should look something like this:
+
+```bash
+{"jsonrpc":"2.0","error":{"code":-32000,"message":"Bad Request: No valid session ID provided"}}
+```
 
 ## Wasm module & Envoy Proxy
+
+**Important:** Run this before librechat as it attempts to conenct to any configured mcp servers at startup
 
 ### Setup
 
 Build the wasm module.
 This command outputs the wasm binary to the `./target` folder.
 
-```
+```bash
 cargo build --target wasm32-wasip1 --release
 ```
 
 Start envoy with the wasm binary and envoy config mounted as path volumes.
 The envoy config will route traffic from `/mcp` to the mcp server started on port 3001, proxying through the wasm module.
 
-```
+```bash
 docker run --rm -it   -v "$PWD/target/wasm32-wasip1/release/mcp_wasm_filter.wasm:/etc/envoy/mcp_wasm_filter.wasm"   -v "$PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml"   -p 10000:10000 -p 9901:9901   envoyproxy/envoy-dev:latest
 ```
 
@@ -99,3 +91,27 @@ There should also be some logs in the envoy output like this:
 [2025-06-16 20:42:19.595][41][info][wasm] [source/extensions/common/wasm/context.cc:1137] wasm log mcp_wasm_filter mcp_wasm_filter_root my_vm: on_http_request_body called
 [2025-06-16 20:42:19.595][41][info][wasm] [source/extensions/common/wasm/context.cc:1137] wasm log mcp_wasm_filter mcp_wasm_filter_root my_vm: Wasm filter: Got request body! body_size: 0
 ```
+
+## LibreChat
+
+Bring it all together in the Librechat UI
+
+### Run LibreChat Locally
+
+Once off config setup:
+
+```bash
+cp librechat/.env.template librechat/.env
+```
+
+Start the services:
+
+```bash
+cd librechat
+docker compose up -d
+```
+
+LibreChat should now be running at http://localhost:3080
+The mcp server should show up in the UI, and allow you to exec the tool using a prompt like `add 7 and 3`.
+You'll need to select an AI provider and model from the dropdown at the top first, and set an API Key (unless you have a custom model/endpoint set up in librechat you can use).
+For example, you can use a Gemini API Key on the free tier to test this out.

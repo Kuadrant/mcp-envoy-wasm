@@ -1,0 +1,8 @@
+.env
+client/
+images/
+data-node
+meili_data*
+data/
+logs
+*.log
