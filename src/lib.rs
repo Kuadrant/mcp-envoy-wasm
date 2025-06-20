@@ -1,66 +1,67 @@
-use proxy_wasm::hostcalls::{log};
+use proxy_wasm::hostcalls::log;
 use proxy_wasm::traits::*;
 use proxy_wasm::types::*;
-use serde::Deserialize;
-// use serde_json::Value;
 
-#[derive(Deserialize, Debug)] // Derive Debug
+struct MinimalRoot;
 
-struct MCPRoot {
-}
+impl Context for MinimalRoot {}
 
-impl Context for MCPRoot {}
-
-impl RootContext for MCPRoot {
-    // Called when VM starts
+impl RootContext for MinimalRoot {
     fn on_vm_start(&mut self, _vm_configuration_size: usize) -> bool {
-        let _ = log(LogLevel::Info, "vm start called");
+        let _ = log(LogLevel::Info, "Minimal WASM filter started");
         true
     }
 
-    // **Tell Envoy this is an HTTP context**
     fn get_type(&self) -> Option<ContextType> {
         Some(ContextType::HttpContext)
     }
 
-    // Called to create an HttpContext for each HTTP stream
     fn create_http_context(&self, _context_id: u32) -> Option<Box<dyn HttpContext>> {
-        Some(Box::new(MCPHttpFilter {
-            request_body: Vec::new(),
+        Some(Box::new(MinimalHttpFilter {
+            response_sent: false,
         }))
     }
 }
 
-// Per-request context
-struct MCPHttpFilter {
-    request_body: Vec<u8>,
+struct MinimalHttpFilter {
+    response_sent: bool,
 }
 
-impl Context for MCPHttpFilter {}
+impl Context for MinimalHttpFilter {}
 
-impl HttpContext for MCPHttpFilter {
-    fn on_http_request_body(&mut self, body_size: usize, end_of_stream: bool) -> Action {
-        let _ = log(LogLevel::Info, "on_http_request_body called");
-        if let Some(chunk) = self.get_http_request_body(0, body_size) {
-            let _ = log(
-                LogLevel::Info,
-                &format!("Appending {} bytes to buffer", &chunk.len()),
-            );
-            self.request_body.extend_from_slice(&chunk);
-        }
-        if end_of_stream {
-            let _ = log(
-                LogLevel::Info,
-                &format!("Wasm filter: Got request body! body_size: {:?}", body_size),
-            );
-        }
+impl HttpContext for MinimalHttpFilter {
+    fn on_http_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool) -> Action {
+        let _ = log(LogLevel::Info, "=== REQUEST HEADERS - CONTINUING IMMEDIATELY ===");
         Action::Continue
+    }
+
+    fn on_http_request_body(&mut self, body_size: usize, end_of_stream: bool) -> Action {
+        let _ = log(LogLevel::Info, &format!("=== REQUEST BODY - body_size: {}, end_of_stream: {} ===", body_size, end_of_stream));
+        
+        if !self.response_sent {
+            let _ = log(LogLevel::Info, "Sending hardcoded response");
+            
+            let response_body = r#"[{"id":1,"jsonrpc":"2.0","result":{"protocolVersion":"2025-03-26","capabilities":{"tools":{"enabled":true}},"serverInfo":{"name":"minimal-test","version":"1.0.0"}}}]"#;
+            
+            self.send_http_response(
+                200,
+                vec![
+                    ("content-type", "application/json"),
+                    ("mcp-session-id", "test-session-123"),
+                ],
+                Some(response_body.as_bytes()),
+            );
+            
+            self.response_sent = true;
+            let _ = log(LogLevel::Info, "Response sent, pausing");
+        }
+        
+        Action::Pause
     }
 }
 
 proxy_wasm::main!({
     proxy_wasm::set_root_context(|_| {
-        Box::new(MCPRoot {
-        })
+        Box::new(MinimalRoot)
     });
-});
+}); 
