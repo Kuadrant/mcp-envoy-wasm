@@ -1,0 +1,91 @@
+apiVersion: kuadrant.io/v1
+kind: AuthPolicy
+metadata:
+  creationTimestamp: '2025-06-24T16:03:38Z'
+  generation: 6
+  managedFields:
+    - apiVersion: kuadrant.io/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          .: {}
+          'f:rules':
+            .: {}
+            'f:authorization':
+              .: {}
+              'f:allow-tools-list':
+                .: {}
+                'f:metrics': {}
+                'f:patternMatching':
+                  .: {}
+                  'f:patterns': {}
+                'f:priority': {}
+          'f:targetRef':
+            .: {}
+            'f:group': {}
+            'f:kind': {}
+            'f:name': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-06-24T16:34:13Z'
+    - apiVersion: kuadrant.io/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions':
+            .: {}
+            'k:{"type":"Accepted"}':
+              .: {}
+              'f:lastTransitionTime': {}
+              'f:message': {}
+              'f:reason': {}
+              'f:status': {}
+              'f:type': {}
+            'k:{"type":"Enforced"}':
+              .: {}
+              'f:lastTransitionTime': {}
+              'f:message': {}
+              'f:reason': {}
+              'f:status': {}
+              'f:type': {}
+          'f:observedGeneration': {}
+      manager: manager
+      operation: Update
+      subresource: status
+      time: '2025-06-24T16:34:15Z'
+  name: mcp-authz
+  namespace: mcp-gateway
+  resourceVersion: '157940'
+  uid: 5f65f215-8332-4faf-a258-5ed066063e52
+spec:
+  rules:
+    authorization:
+      allow-tools-list:
+        metrics: false
+        patternMatching:
+          patterns:
+            - operator: eq
+              selector: request.custom.method
+              value: tools/list
+            - operator: eq
+              selector: request.user_id
+              value: admin
+        priority: 0
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: mcp-wasm-everything
+status:
+  conditions:
+    - lastTransitionTime: '2025-06-24T16:34:13Z'
+      message: AuthPolicy has been accepted
+      reason: Accepted
+      status: 'True'
+      type: Accepted
+    - lastTransitionTime: '2025-06-24T16:34:15Z'
+      message: AuthPolicy has been successfully enforced
+      reason: Enforced
+      status: 'True'
+      type: Enforced
+  observedGeneration: 6

@@ -1,0 +1,41 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"extensions.istio.io/v1alpha1","kind":"WasmPlugin","metadata":{"annotations":{},"name":"wasm-mcp","namespace":"default"},"spec":{"imagePullPolicy":"Always","targetRef":{"group":"gateway.networking.k8s.io","kind":"Gateway","name":"mcp-wasm-everything"},"url":"oci://quay.io/rlawton/wasm-mcp:latest"}}
+  creationTimestamp: '2025-06-24T15:50:03Z'
+  generation: 1
+  managedFields:
+    - apiVersion: extensions.istio.io/v1alpha1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:kubectl.kubernetes.io/last-applied-configuration': {}
+        'f:spec':
+          .: {}
+          'f:imagePullPolicy': {}
+          'f:phase': {}
+          'f:targetRef':
+            .: {}
+            'f:group': {}
+            'f:kind': {}
+            'f:name': {}
+          'f:url': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-06-24T15:50:03Z'
+  name: wasm-mcp
+  namespace: mcp-gateway
+  resourceVersion: '137452'
+  uid: 2713dae8-620c-4657-92c6-930b089be99d
+spec:
+  imagePullPolicy: Always
+  phase: AUTHN
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: mcp-wasm-everything
+  url: 'oci://quay.io/rlawton/wasm-mcp:latest'
